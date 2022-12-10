@@ -55,7 +55,7 @@ def train(cfg):
                 loss, pred, _ = my_model(batch)
                 pred = pred.data.cpu().numpy()
                 acc, max_acc = cal_accuracy(pred, batch[-1])
-                train_loss.append(loss.data[0])
+                train_loss.append(loss.item())
                 train_acc.append(acc)
                 train_max_acc.append(max_acc)
                 # back propogate
@@ -103,7 +103,7 @@ def inference(my_model, valid_data, entity2id, cfg, log_info=False):
         acc, max_acc = cal_accuracy(pred, batch[-1])
         if log_info: 
             output_pred_dist(pred_dist, batch[-1], id2entity, iteration * test_batch_size, valid_data, f_pred)
-        eval_loss.append(loss.data[0])
+        eval_loss.append(loss.item())
         eval_acc.append(acc)
         eval_max_acc.append(max_acc)
 

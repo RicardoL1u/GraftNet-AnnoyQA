@@ -180,7 +180,7 @@ def read_padded(my_lstm, document_emb, document_mask):
     document_emb = document_emb[use_cuda(perm_idx)]
     inverse_perm_idx = [0] * len(perm_idx)
     for i, idx in enumerate(perm_idx):
-        inverse_perm_idx[idx.data[0]] = i
+        inverse_perm_idx[idx.item()] = i
     inverse_perm_idx = torch.LongTensor(inverse_perm_idx)
 
     document_lengths_np = document_lengths.data.cpu().numpy()
