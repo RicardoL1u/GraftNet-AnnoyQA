@@ -4,4 +4,6 @@
 datasets
 model
 *.class
-
+downloads/*
+preprocessing/
+*.zip
