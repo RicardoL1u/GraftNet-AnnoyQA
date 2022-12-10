@@ -25,7 +25,7 @@ import os
 import json
 import random
 import numpy as np
-import cPickle as pkl
+import pickle as pkl
 from tqdm import tqdm
 from scipy.sparse import csr_matrix
 from sklearn.preprocessing import normalize
@@ -217,8 +217,8 @@ if __name__ == "__main__":
     random.shuffle(questions)
     seed_map = _read_seeds()
 
-    relation_embeddings = pkl.load(open(relation_emb))
-    question_embeddings = pkl.load(open(question_emb))
+    relation_embeddings = pkl.load(open(relation_emb,'rb'))
+    question_embeddings = pkl.load(open(question_emb,'rb'))
 
     with open(output_json, "wb") as fo:
         answer_recall, total = 0.0, 0
@@ -236,7 +236,7 @@ if __name__ == "__main__":
                 entity_map, relation_map, adj_mat = _read_facts(
                     fact_file, relation_embeddings, question_embedding,
                     seed_map[question["QuestionId"]], question["QuestionId"])
-            inv_map = {i: k for k, i in entity_map.iteritems()}
+            inv_map = {i: k for k, i in entity_map.items()}
             seed_entities = []
             ans_entities = []
             if question["QuestionId"] in seed_map:
@@ -284,7 +284,7 @@ if __name__ == "__main__":
                     "tuples": _convert_to_readable(extracted_tuples, inv_map)
                 }
             }
-            fo.write(json.dumps(data) + "\n")
+            fo.write((json.dumps(data) + "\n").encode())
     print("%d questions with empty subgraphs." % num_empty)
     print("Answer recall = %.3f" % (answer_recall / total))
     print("Upper Bound = %.3f" % (max_recall / total))

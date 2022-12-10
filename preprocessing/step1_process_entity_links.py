@@ -35,7 +35,7 @@ def _filter_links(links):
 
 entities = set()
 with open(entity_file) as f:
-    for line in tqdm(f):
+    for line in tqdm(f.readlines()):
         entities.add(line.strip())
 
 question_ids = set()

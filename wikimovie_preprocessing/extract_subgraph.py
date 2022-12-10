@@ -20,7 +20,7 @@ kb_file = out_path + "/processed_kb.pkl"
 relation_file = out_path + "/relation_vocab.txt"
 
 import json
-import cPickle as pkl
+import pickle as pkl
 import numpy as np
 from scipy.sparse import csr_matrix
 from tqdm import tqdm

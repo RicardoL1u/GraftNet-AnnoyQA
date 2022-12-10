@@ -17,7 +17,7 @@ import json
 import io
 import re
 import nltk
-import cPickle as pkl
+import pickle as pkl
 from tqdm import tqdm
 
 MIN_ENTITY_LEN = 3

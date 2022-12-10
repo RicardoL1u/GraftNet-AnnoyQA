@@ -18,7 +18,7 @@ kb_entities = out_path + "/entity_vocab.txt"
 import json
 import io
 import nltk
-import cPickle as pkl
+import pickle as pkl
 import re
 from tqdm import tqdm
 

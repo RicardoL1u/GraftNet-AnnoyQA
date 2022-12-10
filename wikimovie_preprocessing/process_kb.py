@@ -9,7 +9,7 @@ import sys
 import io
 import operator
 import numpy as np
-import cPickle as pkl
+import pickle as pkl
 from scipy.sparse import csr_matrix
 
 data_path = sys.argv[1]
