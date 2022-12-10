@@ -26,7 +26,7 @@ with open(processed_documents_file) as fd:
         for entity in doc["title"]["entities"]:
             _add_entity(entity, doc_id)
 
-for k, v in entity_index.iteritems():
+for k, v in entity_index.items():
     entity_index[k] = list(v)
 
 json.dump(entity_index, open(output_file, "w"))

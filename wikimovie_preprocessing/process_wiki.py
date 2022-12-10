@@ -29,7 +29,7 @@ entity_vocab, _ = pkl.load(open(kb_file, "rb"))
 entity_regexes, entity_regexes_lower = [], []
 entity_regexes_noarticles, entity_regexes_noarticles_lower = [], []
 entity_regexes = {}
-for entity, eid in tqdm(entity_vocab.iteritems()):
+for entity, eid in tqdm(entity_vocab.items()):
     if len(entity) < MIN_ENTITY_LEN: continue
     if re.match("\w", entity[-1]) is None:
         entity_clean = entity[:-1]

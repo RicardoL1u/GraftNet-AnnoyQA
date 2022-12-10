@@ -130,7 +130,7 @@ def _get_answer_coverage(answers, entities):
 if __name__ == "__main__":
     kb_e, kb_r, multi_W = _create_multigraph()
 
-    inv_map = {i: k for k, i in kb_e.iteritems()}
+    inv_map = {i: k for k, i in kb_e.items()}
 
     relations = open(relation_file).read().splitlines()
     relations_map = {r: i for (i,r) in enumerate(relations)}

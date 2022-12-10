@@ -55,7 +55,7 @@ for fil in link_files:
                 entity_map[qId].append([fId, score, start, start + length])
 
 with open(output, "w") as f_out:
-    for (qId, links) in entity_map.iteritems():
+    for qId, links in entity_map.items():
         if not links:
             f_out.write("%s\t\n" % qId)
             continue

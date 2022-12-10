@@ -37,7 +37,7 @@ def read_kb_entities(kb_loc):
     kb_ents, _ = pkl.load(open(kb_loc, "rb"))
     name_map = {}
     all_entities = []
-    for entity, eid in kb_ents.iteritems():
+    for entity, eid in kb_ents.items():
         if len(entity) > 1 and re.match("\w", entity[-1]) is None:
             regex = re.compile(u"\\b{}\\b".format(re.escape(entity[:-1])), flags=re.UNICODE)
         else:
