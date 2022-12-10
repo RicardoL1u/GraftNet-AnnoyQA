@@ -65,7 +65,7 @@ def compare_pr(kb_pred_file, doc_pred_file, hybrid_pred_file, w_kb, eps_doc, eps
             line_doc = json.loads(line_doc)
             line_hybrid = json.loads(line_hybrid)
             assert line_kb['answers'] == line_doc['answers'] == line_hybrid['answers']
-            answers = set([unicode(answer) for answer in line_kb['answers']])
+            answers = set([str(answer) for answer in line_kb['answers']])
             # total_not_answerable += (len(answers) == 0)
             # assert len(answers) > 0
 
