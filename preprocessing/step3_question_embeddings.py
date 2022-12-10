@@ -5,10 +5,16 @@ embeddings_file = "glove"
 output_file = "scratch/webqsp_embeddings.pkl"
 dim = 300
 
-import cPickle as pkl
+import pickle as pkl
 import numpy as np
 import json
 from tqdm import tqdm
+
+def find_nth(string, substring, n):
+   if (n == 1):
+       return string.find(substring)
+   else:
+       return string.find(substring, find_nth(string, substring, n - 1) + 1)
 
 word_to_question = {}
 question_lens = {}
@@ -27,8 +33,11 @@ with open(questions_file) as f:
 
 question_emb = {r: np.zeros((dim,)) for r in question_lens}
 with open(embeddings_file) as f:
-    for line in tqdm(f):
-        word, vec = line.strip().split(None, 1)
+    for line in tqdm(f.readlines()):
+        cnt = line.count(' ')
+        br = find_nth(line,' ',cnt-300+1)
+        word = line[:br].strip()
+        vec = line[br:].strip()
         if word in word_to_question:
             for qid in word_to_question[word]:
                 question_emb[qid] += np.array([float(vv) for vv in vec.split()])
@@ -36,4 +45,4 @@ with open(embeddings_file) as f:
 for question in question_emb:
     question_emb[question] = question_emb[question] / question_lens[question]
 
-pkl.dump(question_emb, open(output_file, "w"))
+pkl.dump(question_emb, open(output_file, "wb"))
