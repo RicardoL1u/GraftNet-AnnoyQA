@@ -5,9 +5,15 @@ embeddings_file = "glove"
 output_file = "scratch/relation_emb.pkl"
 dim = 300
 
-import cPickle as pkl
+import pickle as pkl
 import numpy as np
 from tqdm import tqdm
+
+def find_nth(string, substring, n):
+   if (n == 1):
+       return string.find(substring)
+   else:
+       return string.find(substring, find_nth(string, substring, n - 1) + 1)
 
 word_to_relation = {}
 relation_lens = {}
@@ -30,8 +36,11 @@ with open(relations_file) as f:
 
 relation_emb = {r: np.zeros((dim,)) for r in relation_lens}
 with open(embeddings_file) as f:
-    for line in tqdm(f):
-        word, vec = line.strip().split(None, 1)
+    for line in tqdm(f.readlines()):
+        cnt = line.count(' ')
+        br = find_nth(line,' ',cnt-300+1)
+        word = line[:br].strip()
+        vec = line[br:].strip()
         if word in word_to_relation:
             for rid, typ in word_to_relation[word]:
                 relation_emb[rid] += typ * np.array(
@@ -40,4 +49,4 @@ with open(embeddings_file) as f:
 for relation in relation_emb:
     relation_emb[relation] = relation_emb[relation] / relation_lens[relation]
 
-pkl.dump(relation_emb, open(output_file, "w"))
+pkl.dump(relation_emb, open(output_file, "wb"))
