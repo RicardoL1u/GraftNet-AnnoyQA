@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from torch.autograd import Variable
 import torch.nn as nn
+import torch
 from util import use_cuda, sparse_bmm, read_padded
 
 VERY_SMALL_NUMBER = 1e-10
@@ -165,7 +166,7 @@ class GraftNet(nn.Module):
             W = torch.sum(fact2query_att * local_fact_emb, dim=2) / div # batch_size, max_fact
             W_max = torch.max(W, dim=1, keepdim=True)[0] # batch_size, 1
             W_tilde = torch.exp(W - W_max) # batch_size, max_fact
-            e2f_softmax = sparse_bmm(entity2fact_mat.transpose(1, 2), W_tilde.unsqueeze(dim=2)).squeeze(dim=2) # batch_size, max_local_entity
+            e2f_softmax = torch.bmm(entity2fact_mat.transpose(1, 2), W_tilde.unsqueeze(dim=2)).squeeze(dim=2) # batch_size, max_local_entity
             e2f_softmax = torch.clamp(e2f_softmax, min=VERY_SMALL_NUMBER)
             e2f_out_dim = use_cuda(Variable(torch.sum(entity2fact_mat.to_dense(), dim=1), requires_grad=False)) # batch_size, max_local_entity
 
@@ -222,28 +223,28 @@ class GraftNet(nn.Module):
 
             # document -> entity
             if self.use_doc:
-                pagerank_e2d = sparse_bmm(entity_pos_mat.transpose(1,2), pagerank_d.unsqueeze(dim=2) / e2d_out_dim) # batch_size, max_relevant_doc * max_document_word, 1
+                pagerank_e2d = torch.bmm(entity_pos_mat.transpose(1,2), pagerank_d.unsqueeze(dim=2) / e2d_out_dim) # batch_size, max_relevant_doc * max_document_word, 1
                 pagerank_e2d = pagerank_e2d.view(batch_size, max_relevant_doc, max_document_word)
                 pagerank_e2d = torch.sum(pagerank_e2d, dim=2) # batch_size, max_relevant_doc
                 pagerank_e2d = pagerank_e2d / torch.clamp(torch.sum(pagerank_e2d, dim=1, keepdim=True), min=VERY_SMALL_NUMBER) # batch_size, max_relevant_doc
                 pagerank_e2d = pagerank_e2d.unsqueeze(dim=2).expand(batch_size, max_relevant_doc, max_document_word) # batch_size, max_relevant_doc, max_document_word
                 pagerank_e2d = pagerank_e2d.contiguous().view(batch_size, max_relevant_doc * max_document_word) # batch_size, max_relevant_doc * max_document_word
-                pagerank_d2e = sparse_bmm(entity_pos_mat, pagerank_e2d.unsqueeze(dim=2)) # batch_size, max_local_entity, 1
+                pagerank_d2e = torch.bmm(entity_pos_mat, pagerank_e2d.unsqueeze(dim=2)) # batch_size, max_local_entity, 1
                 pagerank_d2e = pagerank_d2e.squeeze(dim=2) # batch_size, max_local_entity
                 pagerank_d2e = pagerank_d2e / torch.clamp(torch.sum(pagerank_d2e, dim=1, keepdim=True), min=VERY_SMALL_NUMBER)
                 pagerank_d = self.pagerank_lambda * pagerank_d2e + (1 - self.pagerank_lambda) * pagerank_d
 
-                d2e_emb = sparse_bmm(entity_pos_mat, d2e_linear(document_textual_emb.view(batch_size, max_relevant_doc * max_document_word, self.entity_dim)))
+                d2e_emb = torch.bmm(entity_pos_mat, d2e_linear(document_textual_emb.view(batch_size, max_relevant_doc * max_document_word, self.entity_dim)))
                 d2e_emb = d2e_emb * pagerank_d.unsqueeze(dim=2) # batch_size, max_local_entity, entity_dim
             
             # fact -> entity
             if self.use_kb:
-                e2f_emb = self.relu(kb_self_linear(local_fact_emb) + sparse_bmm(entity2fact_mat, kb_head_linear(self.linear_drop(local_entity_emb)))) # batch_size, max_fact, entity_dim
-                e2f_softmax_normalized = W_tilde.unsqueeze(dim=2) * sparse_bmm(entity2fact_mat, (pagerank_f / e2f_softmax).unsqueeze(dim=2)) # batch_size, max_fact, 1
+                e2f_emb = self.relu(kb_self_linear(local_fact_emb) + torch.bmm(entity2fact_mat, kb_head_linear(self.linear_drop(local_entity_emb)))) # batch_size, max_fact, entity_dim
+                e2f_softmax_normalized = W_tilde.unsqueeze(dim=2) * torch.bmm(entity2fact_mat, (pagerank_f / e2f_softmax).unsqueeze(dim=2)) # batch_size, max_fact, 1
                 e2f_emb = e2f_emb * e2f_softmax_normalized # batch_size, max_fact, entity_dim
-                f2e_emb = self.relu(kb_self_linear(local_entity_emb) + sparse_bmm(fact2entity_mat, kb_tail_linear(self.linear_drop(e2f_emb))))
+                f2e_emb = self.relu(kb_self_linear(local_entity_emb) + torch.bmm(fact2entity_mat, kb_tail_linear(self.linear_drop(e2f_emb))))
                 
-                pagerank_f = self.pagerank_lambda * sparse_bmm(fact2entity_mat, e2f_softmax_normalized).squeeze(dim=2) + (1 - self.pagerank_lambda) * pagerank_f # batch_size, max_local_entity
+                pagerank_f = self.pagerank_lambda * torch.bmm(fact2entity_mat, e2f_softmax_normalized).squeeze(dim=2) + (1 - self.pagerank_lambda) * pagerank_f # batch_size, max_local_entity
 
             # STEP 2: combine embeddings from fact and documents
             if self.use_doc and self.use_kb:
@@ -259,7 +260,7 @@ class GraftNet(nn.Module):
             # entity -> document
             if self.use_doc:
                 e2d_emb = torch.bmm(d2e_adj_mat.transpose(1,2), e2d_linear(self.linear_drop(next_local_entity_emb / e2d_out_dim))) # batch_size, max_relevant_doc, entity_dim
-                e2d_emb = sparse_bmm(entity_pos_mat.transpose(1,2), e2d_linear(self.linear_drop(next_local_entity_emb))) # batch_size, max_relevant_doc * max_document_word, entity_dim
+                e2d_emb = torch.bmm(entity_pos_mat.transpose(1,2), e2d_linear(self.linear_drop(next_local_entity_emb))) # batch_size, max_relevant_doc * max_document_word, entity_dim
                 e2d_emb = e2d_emb.view(batch_size, max_relevant_doc, max_document_word, self.entity_dim) # batch_size, max_relevant_doc, max_document_word, entity_dim
                 document_textual_emb = document_textual_emb + e2d_emb # batch_size, max_relevant_doc, max_document_word, entity_dim
                 document_textual_emb = document_textual_emb.view(-1, max_document_word, self.entity_dim)
