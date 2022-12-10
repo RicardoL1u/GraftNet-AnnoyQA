@@ -37,8 +37,8 @@ def load_model(path):
 def load_dict(filename):
     word2id = dict()
     with open(filename) as f_in:
-        for line in f_in:
-            word = line.strip().decode('UTF-8')
+        for line in f_in.readlines():
+            word = line.strip()
             word2id[word] = len(word2id)
     return word2id
 
