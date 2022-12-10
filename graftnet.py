@@ -144,11 +144,11 @@ class GraftNet(nn.Module):
         if self.use_kb:
             # build kb_adj_matrix from sparse matrix
             (e2f_batch, e2f_f, e2f_e, e2f_val), (f2e_batch, f2e_e, f2e_f, f2e_val) = kb_adj_mat
-            entity2fact_index = torch.LongTensor([e2f_batch, e2f_f, e2f_e])
+            entity2fact_index = torch.LongTensor(np.array([e2f_batch, e2f_f, e2f_e]))
             entity2fact_val = torch.FloatTensor(e2f_val)
             entity2fact_mat = use_cuda(torch.sparse.FloatTensor(entity2fact_index, entity2fact_val, torch.Size([batch_size, max_fact, max_local_entity]))) # batch_size, max_fact, max_local_entity
 
-            fact2entity_index = torch.LongTensor([f2e_batch, f2e_e, f2e_f])
+            fact2entity_index = torch.LongTensor(np.array([f2e_batch, f2e_e, f2e_f]))
             fact2entity_val = torch.FloatTensor(f2e_val)
             fact2entity_mat = use_cuda(torch.sparse.FloatTensor(fact2entity_index, fact2entity_val, torch.Size([batch_size, max_local_entity, max_fact])))
             
@@ -173,7 +173,7 @@ class GraftNet(nn.Module):
         # build entity_pos matrix
         if self.use_doc:
             entity_pos_dim_batch, entity_pos_dim_entity, entity_pos_dim_doc_by_word, entity_pos_value = entity_pos
-            entity_pos_index = torch.LongTensor([entity_pos_dim_batch, entity_pos_dim_entity, entity_pos_dim_doc_by_word])
+            entity_pos_index = torch.LongTensor(np.array([entity_pos_dim_batch, entity_pos_dim_entity, entity_pos_dim_doc_by_word]))
             entity_pos_val = torch.FloatTensor(entity_pos_value)
             entity_pos_mat = use_cuda(torch.sparse.FloatTensor(entity_pos_index, entity_pos_val, torch.Size([batch_size, max_local_entity, max_relevant_doc * max_document_word]))) # batch_size, max_local_entity, max_relevant_doc * max_document_word
             d2e_adj_mat = torch.sum(entity_pos_mat.to_dense().view(batch_size, max_local_entity, max_relevant_doc, max_document_word), dim=3) # batch_size, max_local_entity, max_relevant_doc
