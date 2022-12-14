@@ -26,7 +26,7 @@ class DataLoader():
         print('loading data from', data_file)
         self.data = []
         with open(data_file) as f_in:
-            for line in tqdm(f_in):
+            for line in tqdm(f_in.readlines()):
                 line = json.loads(line)
                 self.data.append(line)
                 self.max_relevant_doc = max(self.max_relevant_doc, len(line['passages']))

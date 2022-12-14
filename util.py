@@ -46,7 +46,7 @@ def load_documents(document_file):
     print('loading document from', document_file)
     documents = dict()
     with open(document_file) as f_in:
-        for line in tqdm(f_in):
+        for line in tqdm(f_in.readlines()):
             passage = json.loads(line)
             # tokenize document
             document_token = nltk.word_tokenize(passage['document']['text'])
